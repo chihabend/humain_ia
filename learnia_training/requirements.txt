@@ -1,0 +1,6 @@
+transformers
+pandas
+datasets
+faker
+nlpaug
+torch 

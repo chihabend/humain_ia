@@ -1,0 +1,18 @@
+version: "3"
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - model
+  model:
+    build: ./model_server
+    ports:
+      - "8000:8000"
+  frontend:
+    build: ./backend/frontend
+    ports:
+      - "5173:4173"
+    depends_on:
+      - backend 

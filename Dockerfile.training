@@ -1,0 +1,27 @@
+FROM python:3.9-slim
+
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY ia_training/requirements.txt .
+
+# Installer les dépendances Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier le code d'entraînement
+COPY ia_training/ .
+
+# Créer le répertoire pour les données
+RUN mkdir -p data
+
+# Exposer le port pour le monitoring (optionnel)
+EXPOSE 8080
+
+# Commande par défaut pour l'entraînement
+CMD ["python", "train_humanizer_custom.py"] 

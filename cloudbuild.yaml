@@ -1,0 +1,30 @@
+steps:
+  # Étape 1: Construire l'image Docker pour l'entraînement
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.training', '-t', 'gcr.io/$PROJECT_ID/ia-training:$COMMIT_SHA', '.']
+    
+  # Étape 2: Pousser l'image vers Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/ia-training:$COMMIT_SHA']
+    
+  # Étape 3: Déployer sur Cloud Run (optionnel pour le monitoring)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'ia-training-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/ia-training:$COMMIT_SHA'
+      - '--region'
+      - 'europe-west1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '4Gi'
+      - '--cpu'
+      - '2'
+
+images:
+  - 'gcr.io/$PROJECT_ID/ia-training:$COMMIT_SHA' 

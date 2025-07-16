@@ -1,0 +1,99 @@
+===========================================
+COMMANDES MANUELLES - Déploiement Google Cloud
+===========================================
+
+⚠️  IMPORTANT: Exécutez ces commandes dans l'ordre !
+
+1. VÉRIFICATION DE GOOGLE CLOUD SDK
+===================================
+gcloud --version
+
+Si erreur "gcloud not found":
+- Installez depuis: https://cloud.google.com/sdk/docs/install
+- Redémarrez PowerShell
+
+2. AUTHENTIFICATION
+===================
+gcloud auth login
+
+3. CONFIGURATION DU PROJET
+==========================
+# Remplacez YOUR_PROJECT_ID par votre vrai PROJECT_ID
+gcloud config set project YOUR_PROJECT_ID
+
+4. ACTIVATION DES APIs
+======================
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable run.googleapis.com
+gcloud services enable aiplatform.googleapis.com
+gcloud services enable storage.googleapis.com
+
+5. CRÉATION DU BUCKET
+=====================
+# Remplacez YOUR_BUCKET_NAME par votre nom de bucket
+gsutil mb -l europe-west1 gs://YOUR_BUCKET_NAME
+
+6. UPLOAD DES DONNÉES
+=====================
+gsutil cp ia_training/data/humanization_pairs.csv gs://YOUR_BUCKET_NAME/data/
+
+7. DÉPLOIEMENT
+==============
+gcloud builds submit --config cloudbuild.yaml .
+
+8. CONFIGURATION DES VARIABLES D'ENVIRONNEMENT
+==============================================
+gcloud run services update ia-training-service \
+  --region=europe-west1 \
+  --set-env-vars="GCS_BUCKET_NAME=YOUR_BUCKET_NAME" \
+  --set-env-vars="DOWNLOAD_FROM_GCS=true" \
+  --set-env-vars="UPLOAD_TO_GCS=true" \
+  --set-env-vars="BATCH_SIZE=8" \
+  --set-env-vars="NUM_EPOCHS=3" \
+  --set-env-vars="LEARNING_RATE=5e-5" \
+  --set-env-vars="USE_TENSORBOARD=true"
+
+9. VÉRIFICATION
+===============
+# Voir les services déployés
+gcloud run services list --region=europe-west1
+
+# Voir les logs
+gcloud run services logs tail ia-training-service --region=europe-west1
+
+# Voir les builds
+gcloud builds list
+
+10. LANCER L'ENTRAÎNEMENT
+=========================
+# Option 1: Via l'URL du service
+# Allez sur: https://ia-training-service-YOUR_PROJECT_ID.run.app
+
+# Option 2: Via Vertex AI (pour gros modèles)
+./launch_vertex_training.sh YOUR_PROJECT_ID YOUR_BUCKET_NAME
+
+===========================================
+INFORMATIONS IMPORTANTES
+===========================================
+
+📊 URLs UTILES:
+- Console Google Cloud: https://console.cloud.google.com/
+- Cloud Build: https://console.cloud.google.com/cloud-build/builds
+- Cloud Run: https://console.cloud.google.com/run
+- Facturation: https://console.cloud.google.com/billing
+
+💰 COÛTS ESTIMÉS:
+- Entraînement: ~$2-5 par session
+- Stockage: ~$0.02/GB/mois
+- Service web: ~$0.00002400/second
+
+🔧 DÉPANNAGE:
+- Erreur "Permission denied": gcloud auth application-default login
+- Erreur "Quota exceeded": Vérifiez la facturation
+- Erreur "Out of Memory": Réduisez BATCH_SIZE
+
+📈 MONITORING:
+- TensorBoard: tensorboard --logdir=gs://YOUR_BUCKET_NAME/logs
+- Logs temps réel: gcloud run services logs tail ia-training-service --region=europe-west1
+
+=========================================== 

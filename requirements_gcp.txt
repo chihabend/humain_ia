@@ -1,0 +1,9 @@
+transformers
+pandas
+datasets
+faker
+nlpaug
+torch
+google-cloud-storage
+tensorboard
+accelerate 
